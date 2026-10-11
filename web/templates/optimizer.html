@@ -1,0 +1,91 @@
+{% extends "shell.html" %}
+{% set active = 'optimizer' %}
+{% block title %}Smart Reorder Planner · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Smart Reorder Planner</h1>
+    <p>How much to order, and when, so stock covers forecast demand at the lowest cost.</p>
+  </div>
+  <div class="pagehead-tools">
+    {% if is_demo %}<span class="tag">Demo data</span>{% endif %}
+    <a class="btn-quiet" href="{{ url_for('views.report_sku_pdf', sku=sku) }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}">Download PDF plan</a>
+  </div>
+</div>
+
+<form method="get" class="panel settings spaced">
+  <div class="settings-row">
+    <div class="field"><label for="sku">SKU</label>
+      <select id="sku" name="sku">{% for s in skus %}<option value="{{ s }}" {% if s == sku %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="horizon">Days ahead</label>
+      <select id="horizon" name="horizon">{% for h in horizons %}<option value="{{ h }}" {% if h == horizon %}selected{% endif %}>{{ h }}</option>{% endfor %}</select></div>
+    {% if not is_demo %}
+    {% for name, value in constraints.items() %}
+    <div class="field"><label for="{{ name }}">{{ labels[name] }}</label>
+      <input id="{{ name }}" name="{{ name }}" type="number" step="any" min="0" value="{{ '%g'|format(value) }}"></div>
+    {% endfor %}
+    {% endif %}
+  </div>
+  <button class="btn-run" type="submit">Run optimizer</button>
+</form>
+
+<section class="strip" aria-label="Recommended plan">
+  <div><div class="v" id="k-qty">–</div><div class="l">Order quantity, units</div></div>
+  <div><div class="v" id="k-rop">–</div><div class="l">Reorder point, units</div></div>
+  <div><div class="v" id="k-safety">–</div><div class="l">Safety stock, units</div></div>
+  <div><div class="v" id="k-cost">–</div><div class="l">Total expected cost</div></div>
+</section>
+
+<section class="panel spaced">
+  <h2 id="stock-title">Stock on hand for {{ sku }}</h2>
+  <p class="sub" id="stock-sub">Stock falls as units sell, and jumps when an order arrives. An order is placed each time stock reaches the reorder point.</p>
+  <div class="chartbox tall" data-sku="{{ sku }}" id="optimizer-box"><canvas id="c-stock" role="img" aria-label="Line chart of stock on hand for {{ sku }} against its reorder point and safety stock"></canvas></div>
+</section>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>Why this plan</h2>
+    <p class="sub">Plain-language explanation from the language model.</p>
+    <div id="explain-box" class="explain"><p class="muted">Loading explanation…</p></div>
+    <ul id="explain-sources" class="sources" hidden></ul>
+  </section>
+  <section class="panel">
+    <h2>Plan details</h2>
+    <p class="sub">The numbers behind the chart.</p>
+    <div class="tablewrap">
+      <table>
+        <tbody>
+          <tr><th scope="row">Solver status</th><td class="num" id="t-solver">–</td></tr>
+          <tr><th scope="row">Forecast certainty</th><td class="num" id="t-conf">–</td></tr>
+          <tr><th scope="row">Average demand per day</th><td class="num" id="t-avg">–</td></tr>
+          <tr><th scope="row">Stock on hand now</th><td class="num" id="t-now">–</td></tr>
+          <tr><th scope="row">Days of cover</th><td class="num" id="t-cover">–</td></tr>
+          <tr><th scope="row">Supplier lead time</th><td class="num" id="t-lead">–</td></tr>
+          <tr><th scope="row">Orders placed in chart</th><td class="num" id="t-orders">–</td></tr>
+          <tr><th scope="row">Demand served in chart</th><td class="num" id="t-served">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="panel spaced">
+  <h2>Change this order</h2>
+  <p class="sub">If you will order a different amount than recommended, record it and why. The log lets the team review later whether overrides helped.</p>
+  <form method="post" action="{{ url_for('views.add_override') }}" class="settings-row override-form">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="sku" value="{{ sku }}">
+    <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+    <input type="hidden" name="recommended_qty" id="ov-rec" value="">
+    <div class="field"><label for="ov-qty">Quantity you will order</label><input id="ov-qty" name="chosen_qty" type="number" min="0" step="any" required></div>
+    <div class="field wide"><label for="ov-reason">Reason</label><input id="ov-reason" name="reason" type="text" maxlength="200" required></div>
+    <div class="field"><button class="btn-run nomargin" type="submit">Save to log</button></div>
+  </form>
+  {% if overrides %}
+  <div class="tablewrap"><table>
+    <thead><tr><th scope="col">When</th><th scope="col">By</th><th scope="col" class="num">Recommended</th><th scope="col" class="num">Ordered</th><th scope="col">Reason</th></tr></thead>
+    <tbody>{% for o in overrides %}<tr><td>{{ o['created_at'][:16] }}</td><td>{{ o['user_name'] }}</td><td class="num">{{ '%g'|format(o['recommended_qty']) }}</td><td class="num">{{ '%g'|format(o['chosen_qty']) }}</td><td>{{ o['reason'] }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}
+</section>
+{% endblock %}

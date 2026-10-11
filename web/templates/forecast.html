@@ -1,0 +1,50 @@
+{% extends "shell.html" %}
+{% set active = 'forecast' %}
+{% block title %}Forecast · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Forecast</h1>
+    <p>Recent demand and the model's forecast for the days ahead.</p>
+  </div>
+  <div class="pagehead-tools">
+    {% if is_demo %}<span class="tag">Demo data</span>{% endif %}
+    <a class="btn-quiet" href="{{ url_for('views.report_sku_pdf', sku=sku) }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}">Download PDF plan</a>
+    <form method="get" class="picker">
+      <label for="sku">SKU</label>
+      <select id="sku" name="sku" data-autosubmit>
+        {% for s in skus %}<option value="{{ s }}" {% if s == sku %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+      <label for="horizon">Days ahead</label>
+      <select id="horizon" name="horizon" data-autosubmit>
+        {% for h in horizons %}<option value="{{ h }}" {% if h == horizon %}selected{% endif %}>{{ h }}</option>{% endfor %}
+      </select>
+      <noscript><button class="btn-quiet dark" type="submit">Show</button></noscript>
+    </form>
+  </div>
+</div>
+
+<section class="strip" aria-label="Forecast figures">
+  <div><div class="v" id="k-total">–</div><div class="l" id="k-total-l">Units forecast</div></div>
+  <div><div class="v" id="k-avg">–</div><div class="l">Average units per day</div></div>
+  <div><div class="v" id="k-bounds">–</div><div class="l">Average lower to upper bound, units per day</div></div>
+  <div><div class="v" id="k-cert">–</div><div class="l">Forecast certainty (100% minus the typical range)</div></div>
+</section>
+
+<section class="panel">
+  <h2>Demand and forecast for {{ sku }}</h2>
+  <p class="sub">The solid line is actual demand and the dashed line is the forecast. The upper and lower bound lines enclose the 80% range: actual demand should land between them about 8 days in 10.</p>
+  <div class="chartbox tall" data-sku="{{ sku }}" id="forecast-box"><canvas id="c-forecast" role="img" aria-label="Line chart of actual demand and forecast demand for {{ sku }} with an 80 percent range"></canvas></div>
+</section>
+
+<section class="panel spaced" style="margin-top:22px">
+  <h2>Daily bounds</h2>
+  <p class="sub">The forecast with its lower and upper bound for each day ahead. Plan stock for the upper bound if running out costs more than holding extra.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">Date</th><th scope="col" class="num">Lower bound</th><th scope="col" class="num">Forecast</th><th scope="col" class="num">Upper bound</th></tr></thead>
+      <tbody id="bounds-body"></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

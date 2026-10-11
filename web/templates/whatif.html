@@ -1,0 +1,38 @@
+{% extends "shell.html" %}
+{% set active = 'whatif' %}
+{% block title %}What-if · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>What-if Simulator</h1>
+    <p>Replay the last 60 days of one SKU with a surprise: a demand jump, a late supplier, or a storage limit. The forecast does not know about the surprise, just like in real life.</p>
+  </div>
+</div>
+
+<form id="whatif-form" class="panel settings spaced" onsubmit="return false">
+  <div class="settings-row">
+    <div class="field"><label for="wi-sku">SKU</label>
+      <select id="wi-sku">{% for s in skus %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="wi-demand">Demand change: <output id="wi-demand-out">+30%</output></label>
+      <input id="wi-demand" type="range" min="-50" max="150" step="5" value="30"></div>
+    <div class="field"><label for="wi-delay">Supplier delay: <output id="wi-delay-out">2 days</output></label>
+      <input id="wi-delay" type="range" min="0" max="10" step="1" value="2"></div>
+    <div class="field"><label for="wi-cap">Storage limit (units, blank for none)</label>
+      <input id="wi-cap" type="number" min="1" step="any" placeholder="No limit"></div>
+  </div>
+  <button class="btn-run" id="wi-run" type="button">Run what-if</button>
+</form>
+
+<section class="strip" aria-label="Policy results">
+  <div><div class="v" id="w-rule">–</div><div class="l">Simple rule: total cost</div></div>
+  <div><div class="v" id="w-fc">–</div><div class="l">Forecast base-stock: total cost</div></div>
+  <div><div class="v" id="w-cv">–</div><div class="l">CVXPY optimizer: total cost</div></div>
+  <div><div class="v" id="w-fill">–</div><div class="l">Demand served (best policy)</div></div>
+</section>
+
+<section class="panel">
+  <h2>Stock on hand under each policy</h2>
+  <p class="sub" id="wi-sub">Pick settings and run. Lower total cost is better; the cost counts holding and lost sales.</p>
+  <div class="chartbox tall"><canvas id="c-whatif" role="img" aria-label="Line chart of stock on hand for three ordering policies over the last 60 days"></canvas></div>
+</section>
+{% endblock %}

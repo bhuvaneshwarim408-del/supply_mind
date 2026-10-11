@@ -1,0 +1,56 @@
+{% extends "shell.html" %}
+{% set active = 'rl' %}
+{% block title %}RL Lab · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>RL Lab</h1>
+    <p>A reinforcement learning agent learns, by trial and error in the simulator, when to order a little more or a little less than the forecast suggests.</p>
+  </div>
+  <div class="pagehead-tools">
+    <div class="picker"><label for="ds">Dataset</label><select id="ds"></select></div>
+  </div>
+</div>
+<p id="rl-empty" class="notice info" hidden>No results yet. Run <code>python scripts/run_experiments.py</code> from the project root, then reload.</p>
+
+<div id="rl-body" hidden>
+<section class="strip" aria-label="RL summary">
+  <div><div class="v" id="r-ample">–</div><div class="l">Cost vs forecast policy, ample storage</div></div>
+  <div><div class="v" id="r-tight">–</div><div class="l">Cost vs forecast policy, tight storage</div></div>
+  <div><div class="v" id="r-eps">–</div><div class="l">Training episodes</div></div>
+  <div><div class="v" id="r-states">–</div><div class="l">States the agent distinguishes</div></div>
+</section>
+<p id="r-note" class="notice info"></p>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>Learning curve</h2>
+    <p class="sub">Average reward per training block. Reward is minus the daily cost, so higher (closer to zero) is better. A flat line means the agent stopped improving.</p>
+    <div class="chartbox"><canvas id="c-rl-curve" role="img" aria-label="Line chart of the RL agent's average reward during training"></canvas></div>
+  </section>
+  <section class="panel">
+    <h2>What the agent chooses</h2>
+    <p class="sub">Share of days it ordered the forecast amount, a bit less, or a bit more.</p>
+    <div class="chartbox"><canvas id="c-rl-actions" role="img" aria-label="Bar chart of how often the RL agent chose each order adjustment"></canvas></div>
+  </section>
+</div>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>RL against the other policies</h2>
+    <p class="sub">Total cost on the unseen test days. Lower is better.</p>
+    <div class="chartbox"><canvas id="c-rl-cmp" role="img" aria-label="Grouped bar chart comparing total cost of the simple rule, forecast policy, CVXPY optimizer and RL"></canvas></div>
+  </section>
+  <section class="panel">
+    <h2>How it works</h2>
+    <p class="sub">The same simulator used for every other policy.</p>
+    <div class="explain">
+      <p><b>What it sees:</b> how full the inventory position is compared with the forecast target (8 levels) and whether recent demand ran above or below the forecast (3 levels).</p>
+      <p><b>What it can do:</b> order up to the forecast target, 15% less, or 15% more.</p>
+      <p><b>What it is rewarded for:</b> low holding cost and few lost sales each day.</p>
+      <p><b>How it learns:</b> tabular Q-learning on windows of the training period only. The test days are never used for learning.</p>
+    </div>
+  </section>
+</div>
+</div>
+{% endblock %}

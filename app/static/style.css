@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #1c2530;
+  --paper: #f2f1ec;
+  --panel: #ffffff;
+  --line: #d8d5cb;
+  --amber: #d99a30;
+  --amber-dark: #b87f1f;
+  --teal: #3e6b63;
+  --danger: #a8442f;
+  --muted: #6b6a63;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  line-height: 1.5;
+}
+
+.topband {
+  border-bottom: 3px solid var(--amber);
+  padding: 1.5rem 2rem;
+  background: var(--panel);
+}
+
+.topband h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.topband p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 60ch;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 92px);
+}
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 1.75rem 1.5rem;
+}
+
+.sidebar h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: none;
+  color: var(--muted);
+  margin: 0 0 1rem;
+  letter-spacing: 0.01em;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  color: var(--ink);
+}
+
+.field input {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.field input:focus {
+  outline: 2px solid var(--amber);
+  outline-offset: 1px;
+  background: var(--panel);
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.run-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem;
+  background: var(--amber);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.run-btn:hover { background: var(--amber-dark); }
+
+.wait-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.6rem;
+}
+
+.content {
+  padding: 2rem;
+}
+
+.empty-state {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding-top: 2rem;
+}
+
+.error-banner {
+  background: #f6e4de;
+  border-left: 3px solid var(--danger);
+  padding: 0.9rem 1.1rem;
+  border-radius: 2px;
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 1.75rem;
+}
+
+.stat {
+  background: var(--panel);
+  padding: 1.1rem 1.3rem;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.stat-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.status-pill {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 2px;
+  background: #e3ece9;
+  color: var(--teal);
+  margin-bottom: 1.5rem;
+}
+
+.status-pill.not-optimal {
+  background: #f6e4de;
+  color: var(--danger);
+}
+
+.section {
+  margin-bottom: 1.75rem;
+}
+
+.section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+  color: var(--ink);
+}
+
+.forecast-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+}
+
+.forecast-table th, .forecast-table td {
+  text-align: right;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.forecast-table th:first-child, .forecast-table td:first-child {
+  text-align: left;
+}
+
+.forecast-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.explanation-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--teal);
+  padding: 1rem 1.2rem;
+  font-size: 0.92rem;
+}
+
+.sources-list {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.sources-list ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.template-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 0.6rem;
+}

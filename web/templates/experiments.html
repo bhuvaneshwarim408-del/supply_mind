@@ -1,0 +1,62 @@
+{% extends "shell.html" %}
+{% set active = 'experiments' %}
+{% block title %}Experiments · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Experiments</h1>
+    <p>Every policy replayed on days it never saw. Training uses the first 70% of days, tuning the next 15%, and these results use the last 15%.</p>
+  </div>
+  <div class="pagehead-tools">
+    <div class="picker"><label for="ds">Dataset</label><select id="ds"></select></div>
+  </div>
+</div>
+
+<p id="exp-empty" class="notice info" hidden>No results yet. Run <code>python scripts/run_experiments.py</code> from the project root, then reload.</p>
+
+<div id="exp-body" hidden>
+<section class="strip" aria-label="Headline">
+  <div><div class="v" id="e-save-ample">–</div><div class="l" id="e-save-ample-l">Lower cost than the simple rule, ample storage</div></div>
+  <div><div class="v" id="e-save-tight">–</div><div class="l" id="e-save-tight-l">Lower cost than the simple rule, tight storage</div></div>
+  <div><div class="v" id="e-tau">–</div><div class="l">Service level chosen on validation days</div></div>
+  <div><div class="v" id="e-shadow">–</div><div class="l">Value of one more unit of storage (tight case)</div></div>
+</section>
+
+<p id="e-note" class="notice info"></p>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>Total cost by policy</h2>
+    <p class="sub">Lower is better. Costs are holding plus lost sales over the test days.</p>
+    <div class="chartbox tall"><canvas id="c-exp-cost" role="img" aria-label="Grouped bar chart of total cost for each policy under ample and tight storage"></canvas></div>
+  </section>
+  <section class="panel">
+    <h2>Policy results</h2>
+    <p class="sub">Ample storage means no limit. Tight storage caps the total stock at 85% of what the forecast policy normally holds.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col">Policy</th><th scope="col" class="num">Cost, ample</th><th scope="col" class="num">Cost, tight</th><th scope="col" class="num">Demand served, tight</th></tr></thead>
+        <tbody id="e-policy-body"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="panel spaced">
+  <h2>Forecast quality</h2>
+  <p class="sub">Error is the weighted absolute percentage error (WAPE). Range coverage shows how often actual demand fell inside the 80% range; it should be close to 80%.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">Model</th><th scope="col" class="num">WAPE</th><th scope="col" class="num">80% range coverage</th><th scope="col" class="num">Newsvendor cost</th></tr></thead>
+      <tbody id="e-quality-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Total stock over the test days</h2>
+  <p class="sub">Units in stock across all SKUs, tight storage case.</p>
+  <div class="chartbox tall"><canvas id="c-exp-stock" role="img" aria-label="Line chart of total stock over the test days for each policy"></canvas></div>
+</section>
+</div>
+{% endblock %}

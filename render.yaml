@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: supplymind
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SUPPLYMIND_PUBLIC
+        value: "1"
+      - key: SUPPLYMIND_ADMIN_EMAIL
+        sync: false

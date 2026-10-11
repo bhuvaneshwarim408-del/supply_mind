@@ -1,0 +1,26 @@
+pandas
+numpy<2.0
+scikit-learn
+lightgbm
+torch
+cvxpy
+cvxpylayers
+optuna
+pydantic
+pytest
+
+# --- app/ (Ruchitha's integration + UI layer) ---
+flask>=3.0
+Flask-Login>=0.6.3   # web/ login and roles
+reportlab            # web/ PDF reports
+pypdf                # tests that read the PDF text
+
+# --- llm_orchestration/ (Harshitha's LLM + RAG module) ---
+openai>=1.0.0
+
+# NOTE: numpy is pinned <2.0 because the installed diffcp release (used by
+# cvxpylayers for the differentiable optimization layer) has a known
+# incompatibility with NumPy 2.x's __array__(copy=...) signature. On NumPy
+# 2.x, gradcheck silently returns near-zero analytical gradients instead of
+# erroring - this was reproduced and confirmed here. If you upgrade diffcp
+# to a NumPy-2-compatible release later, this pin can be removed.

@@ -1,0 +1,74 @@
+{% extends "shell.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Dashboard · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Overview of stock health across the SKUs analysed so far.</p>
+  </div>
+  <div class="pagehead-tools">
+    {% if is_demo %}<span class="tag">Demo data</span>{% else %}<span class="tag live">Live results</span>{% endif %}
+    <a class="btn-quiet" href="{{ url_for('views.report_pdf') }}">Download PDF report</a>
+  </div>
+</div>
+
+<section class="hero" aria-label="Headline figures">
+  <div class="hero-card cobalt">
+    <div class="lbl">Total expected cost</div>
+    <div class="big" id="k-cost">–</div>
+    <div class="sub" id="k-cert">Average forecast certainty –</div>
+  </div>
+  <div class="hero-card amber">
+    <div class="lbl">Reorder needed</div>
+    <div class="big" id="k-units">–</div>
+    <div class="sub" id="k-units-l">units across SKUs at or below their reorder point</div>
+  </div>
+</section>
+
+<p id="empty-state" class="notice info" hidden>
+  No SKUs have been analysed yet. Open the <a href="{{ url_for('views.optimizer') }}">Smart Reorder Planner</a> to analyse one,
+  or run <code>python -m web.precompute --n 5</code> to prepare several at once.
+</p>
+
+<div id="dash-body">
+<div class="section-label">Quick status overview</div>
+<section class="tiles" aria-label="Stock status">
+  <div class="tile rose"><div class="n" id="t-urgent">–</div><div class="t">Urgent</div><div class="d">At or below reorder point</div></div>
+  <div class="tile amber"><div class="n" id="t-warning">–</div><div class="t">Warning</div><div class="d">Within 30% of reorder point</div></div>
+  <div class="tile emerald"><div class="n" id="t-healthy">–</div><div class="t">Healthy</div><div class="d">Comfortable stock</div></div>
+  <div class="tile slate"><div class="n" id="k-analysed">–</div><div class="t">Analysed</div><div class="d" id="k-analysed-l">SKUs with a forecast</div></div>
+</section>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>Status distribution</h2>
+    <p class="sub">Share of analysed SKUs in each stock state.</p>
+    <div class="chartbox"><canvas id="c-status" role="img" aria-label="Doughnut chart of SKUs by stock status"></canvas></div>
+  </section>
+  <section class="panel">
+    <h2>Expected cost by SKU</h2>
+    <p class="sub">The ten SKUs with the highest expected cost.</p>
+    <div class="chartbox"><canvas id="c-cost" role="img" aria-label="Horizontal bar chart of expected cost for the ten most expensive SKUs"></canvas></div>
+  </section>
+</div>
+
+<div class="grid2 even">
+  <section class="panel">
+    <h2>Recommended order quantity</h2>
+    <p class="sub">The ten SKUs with the largest orders, in units.</p>
+    <div class="chartbox"><canvas id="c-orders" role="img" aria-label="Horizontal bar chart of recommended order quantity for the ten largest SKUs"></canvas></div>
+  </section>
+  <section class="panel">
+    <h2>SKUs closest to running out</h2>
+    <p class="sub">Sorted by days of cover left. Select a SKU to see its plan.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col">SKU</th><th scope="col" class="num">Stock</th><th scope="col" class="num">Reorder at</th><th scope="col" class="num">Days left</th><th scope="col">Status</th></tr></thead>
+        <tbody id="risk-body" data-optimizer-url="{{ url_for('views.optimizer') }}"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</div>
+{% endblock %}

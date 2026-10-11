@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supply Chain Optimizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <div class="topband">
+    <h1>Supply chain optimizer</h1>
+    <p>Forecast demand, calculate optimal order quantities, and get a plain-language explanation for one SKU at a time.</p>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <form method="POST" action="/">
+        <h2>SKU and horizon</h2>
+        <div class="field">
+          <label for="sku_id">SKU ID</label>
+          <input type="text" id="sku_id" name="sku_id" value="{{ form_values.sku_id }}">
+          <div class="field-hint">Format: StoreID::ProductID</div>
+        </div>
+        <div class="field">
+          <label for="horizon_days">Forecast horizon (days)</label>
+          <input type="number" id="horizon_days" name="horizon_days" min="7" max="30" value="{{ form_values.horizon_days }}">
+        </div>
+
+        <h2 style="margin-top: 1.75rem;">Business constraints</h2>
+        <div class="field">
+          <label for="warehouse_capacity">Warehouse capacity (units)</label>
+          <input type="number" step="0.01" id="warehouse_capacity" name="warehouse_capacity" value="{{ form_values.warehouse_capacity }}">
+        </div>
+        <div class="field">
+          <label for="budget">Budget (₹)</label>
+          <input type="number" step="0.01" id="budget" name="budget" value="{{ form_values.budget }}">
+        </div>
+        <div class="field">
+          <label for="lead_time_days">Lead time (days)</label>
+          <input type="number" id="lead_time_days" name="lead_time_days" value="{{ form_values.lead_time_days }}">
+        </div>
+        <div class="field">
+          <label for="unit_holding_cost">Unit holding cost (₹)</label>
+          <input type="number" step="0.01" id="unit_holding_cost" name="unit_holding_cost" value="{{ form_values.unit_holding_cost }}">
+        </div>
+        <div class="field">
+          <label for="unit_stockout_penalty">Unit stockout penalty (₹)</label>
+          <input type="number" step="0.01" id="unit_stockout_penalty" name="unit_stockout_penalty" value="{{ form_values.unit_stockout_penalty }}">
+        </div>
+        <div class="field">
+          <label for="min_order_qty">Minimum order quantity</label>
+          <input type="number" step="0.01" id="min_order_qty" name="min_order_qty" value="{{ form_values.min_order_qty }}">
+        </div>
+
+        <button type="submit" class="run-btn">Run pipeline</button>
+        <div class="wait-note">First run trains the real ensemble — takes about a minute. Repeated runs with the same inputs are instant.</div>
+      </form>
+    </aside>
+
+    <main class="content">
+      {% if result is none %}
+        <div class="empty-state">Set your inputs on the left and run the pipeline to see results.</div>
+
+      {% elif result.error %}
+        <div class="error-banner">{{ result.error }}</div>
+
+      {% else %}
+        {% set forecast = result.forecast %}
+        {% set optimization = result.optimization %}
+        {% set explanation = result.explanation %}
+
+        <span class="status-pill {% if optimization.solver_status != 'optimal' %}not-optimal{% endif %}">
+          solver status: {{ optimization.solver_status }}
+        </span>
+
+        <div class="stat-row">
+          <div class="stat">
+            <div class="stat-label">Order quantity</div>
+            <div class="stat-value">{{ "%.1f"|format(optimization.order_quantity) }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Safety stock</div>
+            <div class="stat-value">{{ "%.1f"|format(optimization.safety_stock) }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Reorder point</div>
+            <div class="stat-value">{{ "%.1f"|format(optimization.reorder_point) }}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Demand forecast — {{ form_values.sku_id }}</h3>
+          <table class="forecast-table">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Lower bound</th>
+                <th>Forecast</th>
+                <th>Upper bound</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for i in range(forecast.point_forecast|length) %}
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ "%.1f"|format(forecast.lower_bound[i]) }}</td>
+                <td>{{ "%.1f"|format(forecast.point_forecast[i]) }}</td>
+                <td>{{ "%.1f"|format(forecast.upper_bound[i]) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="field-hint" style="margin-top: 0.5rem;">Model confidence: {{ "%.2f"|format(forecast.model_confidence) }}</div>
+        </div>
+
+        <div class="section">
+          <h3>Total expected cost</h3>
+          <div class="stat-value" style="font-size: 1.2rem;">₹{{ "%.2f"|format(optimization.total_expected_cost) }}</div>
+        </div>
+
+        {% if explanation and explanation.get('explanation') %}
+        <div class="section">
+          <h3>Explanation</h3>
+          <div class="explanation-box">
+            {% if 'TEMPLATE EXPLANATION' in explanation.explanation %}
+            <div class="template-note">Generated locally (no live API key set) — figures are real, wording is templated.</div>
+            {% endif %}
+            {{ explanation.explanation }}
+            {% if explanation.sources %}
+            <div class="sources-list">
+              Sources used:
+              <ul>
+                {% for s in explanation.sources %}
+                <li>{{ s }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% elif explanation and explanation.get('error') %}
+        <div class="section">
+          <h3>Explanation</h3>
+          <div class="field-hint">Explanation unavailable: {{ explanation.error }}</div>
+        </div>
+        {% endif %}
+
+      {% endif %}
+    </main>
+  </div>
+
+</body>
+</html>

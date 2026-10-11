@@ -1,0 +1,25 @@
+{% extends "shell.html" %}
+{% set active = 'alerts' %}
+{% block title %}Alerts Center · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Alerts Center</h1>
+    <p>Which SKUs need action, most urgent first. Days left is current stock divided by the forecast daily demand.</p>
+  </div>
+  <div class="pagehead-tools">
+    <div class="picker"><label for="al-filter">Show</label>
+      <select id="al-filter"><option value="all">All SKUs</option><option value="Reorder now">Urgent only</option><option value="Low">Warning only</option><option value="Healthy">Healthy only</option></select></div>
+  </div>
+</div>
+<p id="al-empty" class="notice info" hidden>No SKUs have been analysed yet. Run <code>python -m web.precompute --n 5</code> or open the Smart Reorder Planner.</p>
+<section class="panel" id="al-panel" hidden>
+  <p class="sub" id="al-count"></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">SKU</th><th scope="col">Status</th><th scope="col" class="num">Stock now</th><th scope="col" class="num">Reorder point</th><th scope="col" class="num">Days left</th><th scope="col" class="num">Recommended order</th><th scope="col" class="num">Certainty</th></tr></thead>
+      <tbody id="al-body" data-optimizer-url="{{ url_for('views.optimizer') }}"></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="shell">
+  <aside class="side">
+    <div class="brand">{% include "_logo.html" %}<div><b>{{ app_name }}</b><small>{{ tagline }}</small></div></div>
+    <nav class="nav" aria-label="Main">
+      <div class="nav-group"><h3>Main</h3>
+        <a href="{{ url_for('views.dashboard') }}" {% if active == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+        <a href="{{ url_for('views.alerts') }}" {% if active == 'alerts' %}aria-current="page"{% endif %}>Alerts Center</a>
+      </div>
+      <div class="nav-group"><h3>Planning</h3>
+        <a href="{{ url_for('views.forecast') }}" {% if active == 'forecast' %}aria-current="page"{% endif %}>Demand Forecast</a>
+        <a href="{{ url_for('views.optimizer') }}" {% if active == 'optimizer' %}aria-current="page"{% endif %}>Smart Reorder Planner</a>
+        <a href="{{ url_for('views.whatif') }}" {% if active == 'whatif' %}aria-current="page"{% endif %}>What-if Simulator</a>
+      </div>
+      <div class="nav-group"><h3>Intelligence</h3>
+        <a href="{{ url_for('views.rl_lab') }}" {% if active == 'rl' %}aria-current="page"{% endif %}>RL Lab</a>
+        <a href="{{ url_for('views.experiments') }}" {% if active == 'experiments' %}aria-current="page"{% endif %}>Experiments</a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <button class="btn-quiet" id="theme-toggle" type="button">Switch theme</button>
+      {% if current_user.is_authenticated %}
+      <div><div class="who-name">{{ current_user.name }}</div><div class="who-role">{{ current_user.role|capitalize }}</div></div>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn-quiet" type="submit">Sign out</button>
+      </form>
+      {% else %}
+      <div class="who-role">Public view</div>
+      <a class="btn-quiet" href="{{ url_for('auth.login') }}">Sign in</a>
+      {% endif %}
+    </div>
+  </aside>
+  <main class="main" id="main">
+    {% include "_flash.html" %}
+    <p id="load-info" class="notice info" role="status" hidden>Preparing the models. The first run can take up to a minute; later loads are instant.</p>
+    <p id="load-error" class="notice error" role="alert" hidden></p>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
